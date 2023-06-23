@@ -49,9 +49,8 @@
 #include <algorithm>
 #include <list>
 #include <map>
+#include <memory>
 #include <vector>
-
-#include <boost/scoped_ptr.hpp>
 
 #include <Inventor/errors/SoDebugError.h>
 
@@ -112,7 +111,7 @@ public:
       loglevel(3),
       description(NULL),
       evaluator(NULL),
-      initializer(NULL)
+      initializer()
   {
   }
 
@@ -149,7 +148,7 @@ public:
   StateChangeCallbackList statechangecallbacklist;
   void invokeStateChangeCallbacks(const char * identifier, SbBool enterstate);
 
-  boost::scoped_ptr<ScXMLTransitionElt> initializer;
+  std::unique_ptr<ScXMLTransitionElt> initializer;
 
   std::vector<ScXMLElt *> activestatelist;
 

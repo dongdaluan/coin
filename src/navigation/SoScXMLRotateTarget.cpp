@@ -43,10 +43,9 @@
 #include <cassert>
 #include <cmath>
 #include <cfloat>
+#include <memory>
 
-#include <boost/scoped_ptr.hpp>
-#include <boost/intrusive_ptr.hpp>
-
+#include <Inventor/ref_ptr.h>
 #include <Inventor/SbViewVolume.h>
 #include <Inventor/SbRotation.h>
 #include <Inventor/SbPlane.h>
@@ -89,8 +88,8 @@ public:
   }
 
   SbVec2f downposn;
-  boost::intrusive_ptr<SoCamera> cameraclone;
-  boost::scoped_ptr<SbSphereSheetProjector> projector;
+  ref_ptr<SoCamera> cameraclone;
+  std::unique_ptr<SbSphereSheetProjector> projector;
 
   struct log {
     SbVec2f posn;

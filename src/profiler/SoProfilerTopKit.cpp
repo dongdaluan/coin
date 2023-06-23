@@ -46,8 +46,7 @@
 #include <Inventor/annex/Profiler/nodekits/SoProfilerTopKit.h>
 #include "coindefs.h"
 
-#include <boost/intrusive_ptr.hpp>
-
+#include <Inventor/ref_ptr.h>
 #include <Inventor/annex/Profiler/engines/SoProfilerTopEngine.h>
 #include <Inventor/annex/Profiler/nodes/SoProfilerStats.h>
 #include <Inventor/annex/Profiler/nodekits/SoScrollingGraphKit.h>
@@ -79,8 +78,8 @@ public:
   void detachFromStats();
   void attachToStats();
 
-  boost::intrusive_ptr<SoCalculator> geometryEngine;
-  boost::intrusive_ptr<SoProfilerTopEngine> topListEngine;
+  ref_ptr<SoCalculator> geometryEngine;
+  ref_ptr<SoProfilerTopEngine> topListEngine;
   SoProfilerStats * last_stats;
   SoFieldSensor * stats_sensor;
 };

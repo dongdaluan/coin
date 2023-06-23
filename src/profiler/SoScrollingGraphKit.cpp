@@ -40,6 +40,8 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif // HAVE_CONFIG_H
+#include <memory>
+#include <vector>
 
 #ifdef HAVE_NODEKITS
 
@@ -48,10 +50,7 @@
 #include <cstdlib>
 #include <cstdio>
 
-#include <boost/scoped_ptr.hpp>
-#include <boost/scoped_array.hpp>
-#include <boost/intrusive_ptr.hpp>
-
+#include <Inventor/ref_ptr.h>
 #include <Inventor/SbTime.h>
 #include <Inventor/SbColor.h>
 #include <Inventor/errors/SoDebugError.h>
@@ -115,8 +114,8 @@ public:
     }
   }
 
-  boost::intrusive_ptr<SoSeparator> chart;
-  boost::scoped_ptr<SoFieldSensor> addValuesSensor;
+  ref_ptr<SoSeparator> chart;
+  std::unique_ptr<SoFieldSensor> addValuesSensor;
 
   void pullStatistics(void);
   Graph * getGraph(const SbName & key);
@@ -350,11 +349,16 @@ SoScrollingGraphKitP::generateStackedBarsChart(void)
   const int numgraphs = this->graphs.getNumElements();
   if (numgraphs == 0) return;
 
-  boost::scoped_array<SoBaseColor *> colors(new SoBaseColor * [numgraphs]);
-  boost::scoped_array<SoCoordinate3 *> coords(new SoCoordinate3 * [numgraphs]);
-  boost::scoped_array<SoLineSet *> lines(new SoLineSet * [numgraphs]);
-  boost::scoped_array<SoTranslation *> texttrans(new SoTranslation * [numgraphs]);
-  boost::scoped_array<SoText2 *> textnodes(new SoText2 * [numgraphs]);
+  std::vector<SoBaseColor*> colors;
+  colors.resize(numgraphs);
+  std::vector<SoCoordinate3*> coords;
+  coords.resize(numgraphs);
+  std::vector<SoLineSet*> lines;
+  lines.resize(numgraphs);
+  std::vector<SoTranslation*> texttrans;
+  texttrans.resize(numgraphs);
+  std::vector<SoText2*> textnodes;
+  textnodes.resize(numgraphs);
 
   if (this->chart->getNumChildren() != (numgraphs * 4 + 3) ||
       !(this->chart->getChild(2+2)->isOfType(SoLineSet::getClassTypeId()))) {

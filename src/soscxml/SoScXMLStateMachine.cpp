@@ -44,9 +44,8 @@
   \ingroup coin_soscxml
 */
 
-#include <boost/scoped_ptr.hpp>
-#include <boost/intrusive_ptr.hpp>
-
+#include <memory>
+#include <Inventor/ref_ptr.h>
 #include <Inventor/SbString.h>
 #include <Inventor/SbViewportRegion.h>
 #include <Inventor/errors/SoDebugError.h>
@@ -70,11 +69,11 @@ public:
   ~PImpl(void) { }
 
   // hold a couple of custom non-SoEvent-based events
-  boost::scoped_ptr<ScXMLEvent> preGLRenderEvent;
-  boost::scoped_ptr<ScXMLEvent> postGLRenderEvent;
+  std::unique_ptr<ScXMLEvent> preGLRenderEvent;
+  std::unique_ptr<ScXMLEvent> postGLRenderEvent;
 
-  boost::intrusive_ptr<SoNode> scenegraphroot;
-  boost::intrusive_ptr<SoCamera> activecamera;
+  ref_ptr<SoNode> scenegraphroot;
+  ref_ptr<SoCamera> activecamera;
   SbViewportRegion viewport;
 
   mutable SbString varstring;
@@ -168,7 +167,7 @@ SoScXMLStateMachine::processSoEvent(const SoEvent * event)
   // FIXME: Not sure if this check should be here and not somewhere else,
   // but removing this again makes us crash on NULL scene graphs. kintel 20080729.
   if (PRIVATE(this)->scenegraphroot.get()) {
-    boost::scoped_ptr<SoScXMLEvent> wrapperevent;
+    std::unique_ptr<SoScXMLEvent> wrapperevent;
     wrapperevent.reset(new SoScXMLEvent);
     wrapperevent->setSoEvent(event);
     wrapperevent->setUpIdentifier();

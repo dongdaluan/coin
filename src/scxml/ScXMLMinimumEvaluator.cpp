@@ -50,8 +50,7 @@
 
 #include <cassert>
 #include <cstring>
-
-#include <boost/scoped_array.hpp>
+#include <string>
 
 #include <Inventor/scxml/ScXML.h>
 #include <Inventor/scxml/ScXMLAbstractStateElt.h>
@@ -255,11 +254,11 @@ ScXMLAppendOpExprDataObj::createFor(ScXMLDataObj * lhs, ScXMLDataObj * rhs)
       rhs->isOfType(ScXMLStringDataObj::getClassTypeId())) {
     ScXMLStringDataObj * lhsstring = static_cast<ScXMLStringDataObj *>(lhs);
     ScXMLStringDataObj * rhsstring = static_cast<ScXMLStringDataObj *>(rhs);
-    boost::scoped_array<char> string(new char [strlen(lhsstring->getString()) + strlen(rhsstring->getString()) + 1]);
-    strcpy(string.get(), lhsstring->getString());
-    strcat(string.get(), rhsstring->getString());
+    std::string str;
+    str = lhsstring->getString();
+    str.append(rhsstring->getString());
     delete rhsstring;
-    lhsstring->setString(string.get());
+    lhsstring->setString(str.c_str());
     return lhsstring;
   }
   return new ScXMLAppendOpExprDataObj(lhs, rhs);
@@ -341,11 +340,10 @@ ScXMLAppendOpExprDataObj::evaluateNow(ScXMLStateMachine * sm, ScXMLDataObj *& po
     return FALSE;
   }
 
-  boost::scoped_array<char> string(new char [strlen(lhsevaled->getString()) + strlen(rhsevaled->getString()) + 1]);
-  strcpy(string.get(), lhsevaled->getString());
-  strcat(string.get(), rhsevaled->getString());
-
-  pointer = new ScXMLStringDataObj(string.get());
+  std::string str;
+  str = lhsevaled->getString();
+  str.append(rhsevaled->getString());
+  pointer = new ScXMLStringDataObj(str.c_str());
   return TRUE;
 }
 
@@ -367,8 +365,8 @@ BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(MimimumExpressions,1);
 
 BOOST_AUTO_TEST_CASE(MimimumExpressions)
 {
-  boost::scoped_ptr<ScXMLStateMachine> sm(new ScXMLStateMachine);
-  boost::scoped_ptr<ScXMLEvaluator> evaluator(new ScXMLMinimumEvaluator);
+  std::unique_ptr<ScXMLStateMachine> sm(new ScXMLStateMachine);
+  std::unique_ptr<ScXMLEvaluator> evaluator(new ScXMLMinimumEvaluator);
 
   ScXMLDataObj * res = NULL;
   ScXMLBoolDataObj * boolobj = NULL;

@@ -43,8 +43,7 @@
 #include <cmath>
 #include <cfloat>
 
-#include <boost/intrusive_ptr.hpp>
-
+#include <Inventor/ref_ptr.h>
 #include <Inventor/SbViewVolume.h>
 #include <Inventor/SbRotation.h>
 #include <Inventor/SbPlane.h>
@@ -72,7 +71,7 @@ public:
 
   SbBool spinning;
 
-  boost::intrusive_ptr<SoCamera> camera;
+  ref_ptr<SoCamera> camera;
   SbTime updatetime;
   SbRotation spinrotation;
 };

@@ -44,8 +44,6 @@
 #include <cstring>
 #include <cstdio>
 
-#include <boost/scoped_array.hpp>
-
 #include <Inventor/SbString.h>
 #include <Inventor/scxml/ScXMLEvent.h>
 #include <Inventor/scxml/ScXMLDocument.h>
@@ -239,10 +237,12 @@ ScXMLDataObj *
 ScXMLStringDataObj::createFor(const char * strval)
 {
   assert(strval && strval[0] == '\'');
-  boost::scoped_array<char> buf(new char [strlen(strval) + 1]);
-  int res = sscanf(strval, "'%[^']'", buf.get());
+  char* buf(new char [strlen(strval) + 1]);
+  int res = sscanf(strval, "'%[^']'", buf);
   if (res == 1) {
-    return new ScXMLStringDataObj(buf.get());
+    ScXMLStringDataObj* ret = new ScXMLStringDataObj(buf);
+    delete[] buf;
+    return ret;
   } else {
     // This code path is illegal, but the assert is disabled because the
     // problem should be easy enough to identify by the downstream error, and
@@ -250,6 +250,7 @@ ScXMLStringDataObj::createFor(const char * strval)
     // assert(0);
     // An alternative approach would be to construct the StringDataObj
     // on the empty string instead of the faulty one.
+    delete[] buf;
     return new ScXMLStringDataObj(strval);
   }
 }

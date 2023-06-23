@@ -41,9 +41,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
-
-#include <boost/scoped_array.hpp>
-
 #include <coindefs.h>
 #include <Inventor/C/XML/element.h>
 #include <Inventor/C/XML/attribute.h>
@@ -248,17 +245,18 @@ cc_xml_doc_expat_character_data_handler_cb(void * userdata, const XML_Char * cda
   assert(elt);
 
   // need a temporary buffer for the cdata to make a nullterminated string.
-  boost::scoped_array<char> buffer;
-  buffer.reset(new char [len + 1]);
-  memcpy(buffer.get(), cdata, len);
+  char* buffer = new char [len + 1];
+  memcpy(buffer, cdata, len);
   buffer[len] = '\0';
   cc_xml_elt_set_type_x(elt, COIN_XML_CDATA_TYPE);
-  cc_xml_elt_set_cdata_x(elt, buffer.get());
+  cc_xml_elt_set_cdata_x(elt, buffer);
 
-  if (cc_xml_is_all_whitespace_p(buffer.get())) {
+  if (cc_xml_is_all_whitespace_p(buffer)) {
     cc_xml_elt_delete_x(elt);
+    delete[] buffer;
     return;
   }
+  delete[] buffer;
 
   if (doc->parsestack.getLength() > 0) {
     cc_xml_elt * parent = doc->parsestack[doc->parsestack.getLength()-1];
@@ -750,17 +748,17 @@ cc_xml_doc_write_to_file(const cc_xml_doc * doc, const char * path)
   assert(path);;
 
   size_t bufsize = 0;
-  boost::scoped_array<char> buffer;
+  char* buffer;
   {
     char * bufptr = NULL;
     if (!cc_xml_doc_write_to_buffer(doc, bufptr, bufsize)) {
       return FALSE;
     }
     assert(bufptr);
-    buffer.reset(bufptr);
+    buffer = bufptr;
   }
 
-  const size_t bytes = strlen(buffer.get());
+  const size_t bytes = strlen(buffer);
   assert(bufsize == bytes);
   FILE * fp = NULL;
   if (strcmp(path, "-") == 0)
@@ -768,9 +766,10 @@ cc_xml_doc_write_to_file(const cc_xml_doc * doc, const char * path)
   else
     fp = fopen(path, "wb");
   assert(fp != NULL);
-  fwrite(buffer.get(), 1, bufsize, fp);
+  fwrite(buffer, 1, bufsize, fp);
   if (strcmp(path, "-") != 0)
     fclose(fp);
+  delete[] buffer;
 
   return TRUE;
 }

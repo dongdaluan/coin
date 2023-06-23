@@ -31,8 +31,6 @@
 \**************************************************************************/
 
 #include <Inventor/C/base/heap.h>
-#include <boost/lexical_cast.hpp>
-
 #include <cassert>
 #include <cstdlib>
 #include <cstdio>

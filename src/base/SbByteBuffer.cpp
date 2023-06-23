@@ -4,7 +4,7 @@
 SbByteBuffer SbByteBuffer::invalidBuffer_;
 #else
 #define PIMPL_IMPLEMENTATION
-#include <Inventor/SbByteBufferP.icc>
+#include <Inventor/SbByteBufferP.h>
 
 SbByteBuffer SbByteBufferP::invalidBuffer_;
 #endif

@@ -31,9 +31,6 @@
 \**************************************************************************/
 
 #include <Inventor/engines/SoHeightMapToNormalMap.h>
-
-#include <boost/scoped_array.hpp>
-
 #include <Inventor/SbVec3f.h>
 #include <Inventor/SbImage.h>
 #include "engines/SoSubEngineP.h"
@@ -116,8 +113,8 @@ SoHeightMapToNormalMap::convert(const unsigned char * srcptr, SbVec2s size, int 
   float dx, dy;
   int width = size[0];
   int height = size[1];
-  boost::scoped_array<unsigned char> dstarray(new unsigned char[width*height*3]);
-  unsigned char * dstptr = dstarray.get();
+  unsigned char* dstarray = new unsigned char[width*height*3];
+  unsigned char * dstptr = dstarray;
   unsigned char red;
   SbVec3f n;
 
@@ -175,7 +172,8 @@ SoHeightMapToNormalMap::convert(const unsigned char * srcptr, SbVec2s size, int 
     }
   }
 #undef GET_PIXEL_RED
-  dst_out.setValue(size, 3, dstarray.get());
+  dst_out.setValue(size, 3, dstarray);
+  delete[] dstarray;
 }
 
 void

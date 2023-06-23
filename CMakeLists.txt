@@ -66,7 +66,7 @@ include(CoinCMakeUtilities)
 # ############################################################################
 
 option(COIN_BUILD_SHARED_LIBS "Build shared library when ON (default), static when OFF." ON)
-option(COIN_BUILD_TESTS "Build unit tests when ON (default), skips them when OFF." ON)
+option(COIN_BUILD_TESTS "Build unit tests when ON (default), skips them when OFF." OFF)
 option(COIN_BUILD_DOCUMENTATION "Build and install API documentation (requires Doxygen)." OFF)
 cmake_dependent_option(COIN_BUILD_INTERNAL_DOCUMENTATION "Document internal code not part of the API." OFF "COIN_BUILD_DOCUMENTATION" OFF)
 cmake_dependent_option(COIN_BUILD_DOCUMENTATION_MAN "Build Coin man pages." OFF "COIN_BUILD_DOCUMENTATION" OFF)
@@ -167,13 +167,6 @@ endif()
 
 # As not all CMake FindXXX modules and config packages provide target support,
 # we should explicitly check for them on.
-find_package(Boost REQUIRED) # almost any Boost will do
-# Boost::boost - Target for header only dependencies (Boost include directory)
-if(NOT TARGET Boost::boost)
-  list(APPEND COIN_TARGET_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
-else()
-  list(APPEND COIN_TARGET_LINK_LIBRARIES Boost::boost)
-endif()
 
 if(COIN_BUILD_MAC_X11)
   find_package(X11 REQUIRED)

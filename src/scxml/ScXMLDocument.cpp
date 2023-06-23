@@ -40,14 +40,13 @@
 
 #include <cassert>
 #include <cstring>
+#include <functional>
 #include <map>
-
-#include <boost/scoped_ptr.hpp>
-#include <boost/scoped_array.hpp>
-#include <boost/intrusive_ptr.hpp>
+#include <string>
 
 #include <Inventor/C/XML/document.h>
 #include <Inventor/C/XML/element.h>
+#include <Inventor/C/XML/types.h>
 #include <Inventor/misc/CoinResources.h>
 #include <Inventor/scxml/ScXMLScxmlElt.h>
 #include <Inventor/scxml/ScXMLStateElt.h>
@@ -70,6 +69,7 @@
 #include <Inventor/errors/SoDebugError.h>
 
 #include "coindefs.h"
+#include "Inventor/ref_ptr.h"
 
 #ifndef COIN_WORKAROUND_NO_USING_STD_FUNCS
 using std::strncmp;
@@ -83,20 +83,20 @@ using std::strlen;
 class ScXMLDocument::PImpl {
 public:
   PImpl(void)
-  : filename(NULL),
-    root(NULL),
-    stateidmap(NULL),
-    dataidmap(NULL)
+  : filename(),
+    root(),
+    stateidmap(),
+    dataidmap()
   { }
   ~PImpl(void) { }
 
-  boost::scoped_array<char> filename;
-  boost::scoped_ptr<ScXMLScxmlElt> root;
+  std::string filename;
+  std::unique_ptr<ScXMLScxmlElt> root;
 
   typedef std::map<const char *, ScXMLAbstractStateElt *> StateIdMap;
   typedef std::map<const char *, ScXMLDataElt *> DataIdMap;
-  boost::scoped_ptr<StateIdMap> stateidmap;
-  boost::scoped_ptr<DataIdMap> dataidmap;
+  std::unique_ptr<StateIdMap> stateidmap;
+  std::unique_ptr<DataIdMap> dataidmap;
 
   void fillIdentifierMaps(ScXMLElt * object);
 
@@ -285,12 +285,14 @@ ScXMLDocument::readFile(const char * filename)
     }
   }
 
-  boost::intrusive_ptr<cc_xml_doc> xmldoc(cc_xml_doc_new());
-  if (unlikely(!cc_xml_doc_read_file_x(xmldoc.get(), filename))) {
+  cc_xml_doc* xmldoc = cc_xml_doc_new();
+  if (unlikely(!cc_xml_doc_read_file_x(xmldoc, filename))) {
+	  cc_xml_doc_delete_x(xmldoc);
     return NULL;
   }
 
-  scxmldoc = ScXMLDocument::readXMLData(xmldoc.get());
+  scxmldoc = ScXMLDocument::readXMLData(xmldoc);
+  cc_xml_doc_delete_x(xmldoc);
   if (unlikely(!scxmldoc)) {
     return NULL;
   }
@@ -305,12 +307,14 @@ ScXMLDocument::readBuffer(const SbByteBuffer & buffer)
 {
   if (buffer.size()==0) return NULL;
 
-  boost::intrusive_ptr<cc_xml_doc> xmldoc(cc_xml_doc_new());
-  if (unlikely(!cc_xml_doc_read_buffer_x(xmldoc.get(), buffer.constData(), buffer.size()))) {
+  cc_xml_doc* xmldoc(cc_xml_doc_new());
+  if (unlikely(!cc_xml_doc_read_buffer_x(xmldoc, buffer.constData(), buffer.size()))) {
+	cc_xml_doc_delete_x(xmldoc);
     return NULL;
   }
 
-  ScXMLDocument * scxmldoc = ScXMLDocument::readXMLData(xmldoc.get());
+  ScXMLDocument* scxmldoc = ScXMLDocument::readXMLData(xmldoc);
+  cc_xml_doc_delete_x(xmldoc);
   if (unlikely(!scxmldoc)) {
     return NULL;
   }
@@ -349,17 +353,16 @@ ScXMLDocument::setFilename(const char * filename)
 {
   if (filename) {
     const size_t len = strlen(filename);
-    PRIVATE(this)->filename.reset(new char [len + 1]);
-    strcpy(PRIVATE(this)->filename.get(), filename);
+    PRIVATE(this)->filename = filename;
   } else {
-    PRIVATE(this)->filename.reset();
+    PRIVATE(this)->filename.clear();
   }
 }
 
 const char *
 ScXMLDocument::getFilename(void) const
 {
-  return PRIVATE(this)->filename.get();
+  return PRIVATE(this)->filename.c_str();
 }
 
 void

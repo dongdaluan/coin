@@ -45,8 +45,7 @@
 */
 
 #include <cassert>
-
-#include <boost/scoped_ptr.hpp>
+#include <memory>
 
 #include <Inventor/errors/SoDebugError.h>
 #include <Inventor/C/XML/element.h>
@@ -137,9 +136,9 @@ ScXMLInitialEltReader::read(ScXMLElt * container, cc_xml_elt * xmlelt, ScXMLDocu
 
 class ScXMLInitialElt::PImpl {
 public:
-  PImpl(void) : transitionptr(NULL) { }
+  PImpl(void) : transitionptr() { }
 
-  boost::scoped_ptr<ScXMLTransitionElt> transitionptr;
+  std::unique_ptr<ScXMLTransitionElt> transitionptr;
 };
 
 #define PRIVATE(obj) ((obj)->pimpl)

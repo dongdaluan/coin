@@ -66,10 +66,8 @@
 
 #include <cstdlib>
 #include <cstring>
-
-#include <boost/scoped_ptr.hpp>
-#include <boost/scoped_array.hpp>
-
+#include <memory>
+#include <vector>
 #include <Inventor/C/glue/gl.h>
 #include <Inventor/C/tidbits.h>
 #include <Inventor/SbColor.h>
@@ -563,7 +561,7 @@ public:
   SoGLRenderAction::TransparentDelayedObjectRenderType transpdelayedrendertype;
   SbBool renderingtranspbackfaces;
 
-  boost::scoped_ptr<SoGetBoundingBoxAction> bboxaction;
+  std::unique_ptr<SoGetBoundingBoxAction> bboxaction;
   SbVec2f updateorigin, updatesize;
   SbBool needglinit;
   SbBool isrendering;
@@ -580,7 +578,7 @@ public:
 
   GLuint depthtextureid;
   GLuint hilotextureid;
-  boost::scoped_array<GLuint> rgbatextureids;
+  std::vector<GLuint> rgbatextureids;
   GLuint sortedlayersblendprogramid;
   unsigned short viewportheight;
   unsigned short viewportwidth;
@@ -620,9 +618,9 @@ public:
   void doPathSort(void);
 
   // For profiling mode auto-redraw functionality
-  boost::scoped_ptr<SoAlarmSensor> redrawSensor;
+  std::unique_ptr<SoAlarmSensor> redrawSensor;
   static void redrawSensorCB(void * userdata, SoSensor * sensor);
-  boost::scoped_ptr<SoNodeSensor> deleteSensor;
+  std::unique_ptr<SoNodeSensor> deleteSensor;
   static void deleteNodeCB(void * userdata, SoSensor * sensor);
 
 };
@@ -2221,7 +2219,7 @@ SoGLRenderActionP::initSortedLayersBlendRendering(const SoState * state)
   if (envusenvidiarc && (atoi(envusenvidiarc) > 0))
     this->usenvidiaregistercombiners = TRUE;
 
-  this->rgbatextureids.reset(new GLuint[this->sortedlayersblendpasses]);
+  this->rgbatextureids.resize(this->sortedlayersblendpasses);
 
   const cc_glglue * glue = sogl_glue_instance(state);
   if (glue->has_arb_fragment_program && !this->usenvidiaregistercombiners) {
@@ -2457,7 +2455,8 @@ SoGLRenderActionP::setupSortedLayersBlendTextures(const SoState * state)
     if (this->sortedlayersblendinitialized) {
       // Remove the old textures to make room for new ones if size has changed.
       glDeleteTextures(1, &this->depthtextureid);
-      glDeleteTextures(this->sortedlayersblendpasses, this->rgbatextureids.get());
+      if(!this->rgbatextureids.empty())
+        glDeleteTextures(this->sortedlayersblendpasses, &this->rgbatextureids[0]);
     }
 
     // Depth texture setup
@@ -2507,7 +2506,7 @@ SoGLRenderActionP::setupSortedLayersBlendTextures(const SoState * state)
     //
     // FIXME: the texture ids must be bound to the current rendering
     // context, and deallocated when it is destructed. 20040718 mortene.
-    glGenTextures(this->sortedlayersblendpasses, this->rgbatextureids.get());
+    glGenTextures(this->sortedlayersblendpasses, &this->rgbatextureids[0]);
     for (int i=0;i<sortedlayersblendpasses;++i) {
       glBindTexture(GL_TEXTURE_RECTANGLE_EXT, this->rgbatextureids[i]);
       glCopyTexImage2D(GL_TEXTURE_RECTANGLE_EXT, 0, GL_RGBA8, 0, 0, canvassize[0], canvassize[1], 0);

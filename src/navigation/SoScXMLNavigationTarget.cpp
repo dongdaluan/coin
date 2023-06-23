@@ -47,9 +47,6 @@
 #include <cstring>
 #include <cstdio>
 #include <map>
-
-#include <boost/scoped_array.hpp>
-
 #include <Inventor/SbVec2f.h>
 #include <Inventor/SbVec3f.h>
 #include <Inventor/SbRotation.h>
@@ -171,11 +168,14 @@ SoScXMLNavigationTarget::getSessionId(const ScXMLEvent * event)
     return SbName::empty();
   }
   if (sessionidstr[0] == '\'') { // unwrap string representation
-    boost::scoped_array<char> buf(new char [strlen(sessionidstr)+1]);
-    int res = sscanf(sessionidstr, "'%[^']'", buf.get());
+    char* buf(new char [strlen(sessionidstr)+1]);
+    int res = sscanf(sessionidstr, "'%[^']'", buf);
     if (res == 1) {
-      return SbName(buf.get());
+      SbName ret(buf);
+      delete[] buf;
+      return ret;
     }
+    delete[] buf;
   }
   return SbName(sessionidstr);
 }
@@ -310,12 +310,14 @@ SoScXMLNavigationTarget::getEventString(const ScXMLEvent * event, const char * l
     return FALSE;
   }
   else {
-    boost::scoped_array<char> buf(new char [strlen(valuestr) + 1]);
-    int res = sscanf(valuestr, "'%[^']'", buf.get());
+    char* buf(new char [strlen(valuestr) + 1]);
+    int res = sscanf(valuestr, "'%[^']'", buf);
     if (res == 1) {
-      str_out = buf.get();
+      str_out = buf;
+      delete[] buf;
       return TRUE;
     } else {
+      delete[] buf;
       SoDebugError::postWarning("SoScXMLNavigationTarget::getEventString",
                                 "while processing %s: parameter '%s' contains invalid string data (\"%s\").",
                                 event->getEventName().getString(), label, valuestr);
